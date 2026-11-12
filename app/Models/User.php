@@ -16,12 +16,15 @@ class User extends Authenticatable implements JWTSubject
         'email',
         'password',
         'role',
+        'is_active',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
+    
 
     /**
      * Lấy định danh lưu vào JWT Claim (sub)
