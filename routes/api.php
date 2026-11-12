@@ -14,3 +14,13 @@ Route::prefix('auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
     });
 });
+
+// Nhóm API dành riêng cho Admin (/api/admin/*) - dùng chung guard auth:api
+Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
+    // Route mẫu để test Postman
+    Route::get('/dashboard', function () {
+        return response()->json(['message' => 'Chào mừng Admin!']);
+    });
+
+    // Sau này thêm các API quản lý sách, danh mục, đơn hàng vào đây
+});
