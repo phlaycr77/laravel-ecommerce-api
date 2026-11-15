@@ -13,15 +13,6 @@ class Order extends Model
         'user_id',
         'total_amount',
         'status',
-        'payment_method',
-        'receiver_name',
-        'phone',
-        'shipping_address',
-        'note',
-    ];
-
-    protected $casts = [
-        'total_amount' => 'decimal:2',
     ];
 
     public function user()
