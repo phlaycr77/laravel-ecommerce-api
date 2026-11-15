@@ -106,5 +106,35 @@ class OrderService
             $order->update(['status' => 'cancelled']);
             return $order->fresh('items.product');
         });
+        
+    }
+    public function getAllOrdersForAdmin(array $filters = [])
+    {
+        return $this->orderRepo->getAllOrders($filters);
+    }
+
+    public function getOrderDetailForAdmin(int $orderId)
+    {
+        return $this->orderRepo->findById($orderId);
+    }
+
+    public function updateOrderStatusByAdmin(int $orderId, string $newStatus)
+    {
+        $order = $this->orderRepo->findById($orderId);
+
+        if (in_array($order->status, ['delivered', 'cancelled'], true)) {
+            throw new Exception('Không thể thay đổi trạng thái của đơn đã hoàn thành hoặc đã hủy.', 400);
+        }
+
+        return DB::transaction(function () use ($order, $newStatus) {
+            // Nếu Admin chuyển sang hủy đơn thì hoàn lại tồn kho
+            if ($newStatus === 'cancelled') {
+                foreach ($order->items as $item) {
+                    Product::where('id', $item->product_id)->increment('stock', $item->quantity);
+                }
+            }
+
+            return $this->orderRepo->updateStatus($order->id, $newStatus);
+        });
     }
 }
