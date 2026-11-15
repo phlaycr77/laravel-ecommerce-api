@@ -33,4 +33,26 @@ class OrderRepository implements OrderRepositoryInterface
     {
         return OrderItem::create($data);
     }
+    public function getAllOrders(array $filters = [])
+    {
+        $query = Order::with(['user:id,name,email', 'items.product'])->orderByDesc('id');
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        return $query->paginate(15);
+    }
+
+    public function findById(int $orderId)
+    {
+        return Order::with(['user:id,name,email', 'items.product'])->findOrFail($orderId);
+    }
+
+    public function updateStatus(int $orderId, string $status)
+    {
+        $order = Order::findOrFail($orderId);
+        $order->update(['status' => $status]);
+        return $order->fresh(['user:id,name,email', 'items.product']);
+    }
 }
