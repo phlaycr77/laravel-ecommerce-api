@@ -31,7 +31,7 @@ class OrderService
         return $order;
     }
 
-    public function checkoutCOD(int $userId, array $shippingData)
+    public function checkoutCOD(int $userId, array $shippingData = [])
     {
         $cartItems = $this->cartRepo->getByUser($userId);
 
@@ -39,12 +39,11 @@ class OrderService
             throw new Exception('Giỏ hàng đang trống, không thể đặt hàng.', 400);
         }
 
-        return DB::transaction(function () use ($userId, $shippingData, $cartItems) {
+        return DB::transaction(function () use ($userId, $cartItems) {
             $totalAmount = 0;
             $orderItemsPayload = [];
 
             foreach ($cartItems as $item) {
-                // Khóa dòng sản phẩm để chống 2 người đặt trùng làm âm kho
                 $product = Product::where('id', $item->product_id)->lockForUpdate()->first();
 
                 if (!$product || $product->stock < $item->quantity) {
@@ -59,20 +58,15 @@ class OrderService
 
                 $orderItemsPayload[] = [
                     'product_id' => $product->id,
+                    'price'      => $product->price,
                     'quantity'   => $item->quantity,
-                    'unit_price' => $product->price,
                 ];
             }
 
             $order = $this->orderRepo->createOrder([
-                'user_id'          => $userId,
-                'total_amount'     => $totalAmount,
-                'status'           => 'pending',
-                'payment_method'   => 'COD',
-                'receiver_name'    => $shippingData['receiver_name'],
-                'phone'            => $shippingData['phone'],
-                'shipping_address' => $shippingData['shipping_address'],
-                'note'             => $shippingData['note'] ?? null,
+                'user_id'      => $userId,
+                'total_amount' => $totalAmount,
+                'status'       => 'pending',
             ]);
 
             foreach ($orderItemsPayload as $payload) {
@@ -106,8 +100,8 @@ class OrderService
             $order->update(['status' => 'cancelled']);
             return $order->fresh('items.product');
         });
-        
     }
+
     public function getAllOrdersForAdmin(array $filters = [])
     {
         return $this->orderRepo->getAllOrders($filters);
@@ -127,7 +121,6 @@ class OrderService
         }
 
         return DB::transaction(function () use ($order, $newStatus) {
-            // Nếu Admin chuyển sang hủy đơn thì hoàn lại tồn kho
             if ($newStatus === 'cancelled') {
                 foreach ($order->items as $item) {
                     Product::where('id', $item->product_id)->increment('stock', $item->quantity);
