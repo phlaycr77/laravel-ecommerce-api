@@ -38,12 +38,22 @@ class AuthController extends Controller
                 'message' => 'Email hoặc mật khẩu không chính xác',
             ], 401);
         }
+             $user = auth('api')->user();
+        if (!$user->is_active) {
+            auth('api')->logout();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Tài khoản của bạn đã bị khóa.'
+            ], 403);
+        }
 
         return response()->json([
             'status'  => 'success',
             'message' => 'Đăng nhập thành công',
             'data'    => $result,
         ], 200);
+
+       
     }
     public function me(): JsonResponse
     {
