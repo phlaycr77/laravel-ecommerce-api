@@ -1,66 +1,92 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# BookStore Laravel eCommerce API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Hệ thống Backend RESTful API cho website thương mại điện tử bán sách (**BookStore**), xây dựng trên nền tảng **Laravel** với cơ chế xác thực **JWT**, phân quyền theo vai trò (**RBAC**: `admin` / `customer`), xử lý giao dịch đặt hàng COD an toàn bằng **Database Transaction** và bộ kiểm thử tự động **Feature Tests**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 1. Công nghệ sử dụng
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* **Ngôn ngữ & Framework:** PHP 8.x, Laravel
+* **Cơ sở dữ liệu:** MySQL (6 bảng: `users`, `categories`, `products`, `cart_items`, `orders`, `order_items`)
+* **Xác thực & Bảo mật:** JSON Web Token (`tymon/jwt-auth` / `php-open-source-saver/jwt-auth`), mã hóa mật khẩu Bcrypt, Middleware kiểm tra vai trò và trạng thái khóa tài khoản (`is_active`)
+* **Kiểm thử & Tài liệu API:** PHPUnit Feature Tests, Postman Collection v2.1 (`docs/BookStore Laravel API.json`)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 2. Cấu trúc thư mục chính
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```text
+laravel-ecommerce-api/
+├── ai-logs/                     # Nhật ký sử dụng và kiểm chứng AI (AI-03.md, AI-04.md)
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/Api/     # Các REST API Controller (Auth, Profile, Category, Product, Cart, Order, Admin...)
+│   │   ├── Middleware/          # Middleware xác thực JWT & phân quyền Admin/Customer
+│   │   └── Requests/            # FormRequest validate dữ liệu đầu vào
+│   ├── Models/                  # Eloquent Models (User, Category, Product, CartItem, Order, OrderItem)
+│   ├── Repositories/            # Tầng truy xuất dữ liệu
+│   └── Services/                # Tầng xử lý nghiệp vụ (AuthService, CartService, OrderService...)
+├── database/
+│   ├── migrations/              # Định nghĩa cấu trúc 6 bảng CSDL
+│   └── seeders/                 # Dữ liệu mẫu (Admin, Khách hàng demo, Danh mục, Sách)
+├── docs/
+│   ├── BookStore Laravel API.json # Bộ sưu tập 23 API trên Postman
+│   ├── moc-2.md                 # Báo cáo tiến độ hoàn thành Mốc 2
+│   └── test-cases.md            # Bảng kịch bản kiểm thử chi tiết
+└── tests/
+    └── Feature/                 # 5 bộ kiểm thử tự động toàn bộ luồng nghiệp vụ
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 3. Hướng dẫn cài đặt và khởi chạy
 
-## Laravel Sponsors
+### Bước 1: Cài đặt thư viện phụ thuộc
+```bash
+composer install
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Bước 2: Cấu hình môi trường
+Sao chép tệp `.env.example` thành `.env` và cập nhật thông tin kết nối MySQL (`DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`):
+```bash
+cp .env.example .env
+php artisan key:generate
+php artisan jwt:secret
+```
 
-### Premium Partners
+### Bước 3: Khởi tạo cơ sở dữ liệu và dữ liệu mẫu
+```bash
+php artisan migrate --seed
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Bước 4: Khởi chạy máy chủ API
+```bash
+php artisan serve
+```
+Máy chủ sẽ hoạt động tại địa chỉ mặc định: `http://127.0.0.1:8000` (Base API URL: `http://127.0.0.1:8000/api`).
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 4. Tài khoản mẫu phục vụ kiểm thử & Demo
 
-## Code of Conduct
+Sau khi chạy `php artisan migrate --seed`, hệ thống có sẵn các tài khoản mặc định:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Vai trò | Email | Mật khẩu | Ghi chú |
+| :--- | :--- | :--- | :--- |
+| **Khách hàng (Customer)** | `khachdemo@gmail.com` | `password` | Dùng cho luồng xem giỏ hàng, đặt hàng COD, quản lý hồ sơ |
+| **Quản trị viên (Admin)** | *(Xem trong `database/seeders/`)* | `password` | Dùng cho quản lý danh mục, sản phẩm, duyệt đơn, khóa tài khoản |
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 5. Kiểm thử tự động & Kiểm thử Postman
 
-## License
+### Chạy bộ kiểm thử tự động (Feature Tests)
+```bash
+php artisan test
+```
+Bao gồm 5 bộ kiểm thử: `AuthAndRbacTest`, `ProductCatalogTest`, `CartTest`, `OrderCodTest`, `AdminManagementTest`.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Kiểm thử thủ công bằng Postman
+1. Mở **Postman** -> chọn **Import** -> chọn tệp `docs/BookStore Laravel API.json`.
+2. Đảm bảo biến `base_url` có giá trị `http://127.0.0.1:8000/api`.
+3. Chạy request **Login Customer** hoặc **Login Admin** để Postman tự động lưu token vào biến môi trường trước khi gọi các API được bảo vệ.
