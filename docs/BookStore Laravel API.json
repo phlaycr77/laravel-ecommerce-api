@@ -36,7 +36,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"khachdemo@gmail.com\",\r\n    \"password\": \"password\"\r\n}",
+              "raw": "{\r\n    \"email\": \"khachang10@gmail.com\",\r\n    \"password\": \"User@123\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
